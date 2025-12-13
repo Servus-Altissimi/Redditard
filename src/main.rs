@@ -3,8 +3,10 @@
 // |  .--'| .-. :' .-. |' .-. |,--.'-.  .-'    |  ||  |(  .-' | .-. :|  .--' 
 // |  |   \   --.\ `-' |\ `-' ||  |  |  |      '  ''  '.-'  `)\   --.|  |    
 // `--'    `----' `---'  `---' `--'  `--'       `----' `----'  `----'`--'    
+
 // Requires Ollama & Chromedriver
 // Uses reddit for you!  
+// I neither care nor am responsible for any damages. 
 
 // Copyright 2025 Servus Altissimi (Pseudonym)
 
@@ -53,6 +55,12 @@ struct Config {
     subreddits: Vec<SubredditConfig>,
 }
 
+#[derive(Debug, Deserialize)]
+struct PromptConfig {
+    #[serde(default)]
+    custom_prompt: Option<String>,
+}
+
 struct RedditBot {
     driver: WebDriver,
     ollama: Ollama,
@@ -64,6 +72,7 @@ struct RedditBot {
     model: String,
     verbose: bool,
     upvote_enabled: bool,
+    prompt_template: String,
 }
 
 impl RedditBot {
@@ -73,10 +82,12 @@ impl RedditBot {
         let config: Config = toml::from_str(&config_str)
             .context("Failed to parse subreddits.toml")?;
 
+        let prompt_template = Self::load_prompt_template(args.verbose)?;
         let commented_posts = Self::load_posted_history()?;
         
         if args.verbose {
             println!("[INIT] Loaded {} previously commented posts", commented_posts.len());
+            println!("[INIT] Using {} prompt", if prompt_template.contains("{{SUBREDDIT}}") { "custom" } else { "default" });
         }
 
         let mut caps = DesiredCapabilities::chrome();
@@ -160,7 +171,67 @@ impl RedditBot {
             model: args.model.clone(),
             verbose: args.verbose,
             upvote_enabled: args.upvote,
+            prompt_template,
         })
+    }
+
+    fn load_prompt_template(verbose: bool) -> Result<String> {
+        match fs::read_to_string("prompt.toml") {
+            Ok(content) => {
+                match toml::from_str::<PromptConfig>(&content) {
+                    Ok(prompt_config) => {
+                        if let Some(custom) = prompt_config.custom_prompt {
+                            if verbose {
+                                println!("[PROMPT] Loaded custom prompt from prompt.toml");
+                            }
+                            return Ok(custom);
+                        }
+                    }
+                    Err(e) => {
+                        if verbose {
+                            println!("[PROMPT] Warning: Failed to parse prompt.toml: {}", e);
+                            println!("[PROMPT] Using default prompt");
+                        }
+                    }
+                }
+            }
+            Err(_) => {
+                if verbose {
+                    println!("[PROMPT] No prompt.toml found, using default prompt");
+                }
+            }
+        }
+
+        // to be safe
+        Ok(r#"You're browsing r/{{SUBREDDIT}} and just saw this post. Write a quick 1-2 sentence reaction that sounds like an actual person.
+
+Post title: {{TITLE}}{{BODY_CONTEXT}}
+
+STYLE:
+- Punch
+- Actually excited or interested, not fake hype
+- Say what you think, share what you know, or just react
+- Talk like a normal person texting a friend
+- Be chill, funny, helpful, or hype WHEN ITS DESERVED
+
+- Try to be a little cute, not a grown man
+DO:
+- Get straight to the point
+- Share quick personal experience if relevant
+- Drop useful info casually
+- Use natural slang: tbh, fr, ngl, lowkey, deadass (but dont overdo it)
+- Sometimes just be like damn thats cool or yoo nice
+- Match the energy of the post{{EMOTICON_INSTRUCTION}}
+
+DONT:
+- Ask rhetorical questions or any questions unless you genuinely wanna know
+- Sound like an AI or corporate bot
+- Force jokes or use cringe puns
+- Use hashtags or multiple exclamation points
+- Be overly nice or overly enthusiastic
+- Use dashes or semicolons for no reason
+
+Just write the comment. Nothing else. NO quotation marks:"#.to_string())
     }
 
     fn load_posted_history() -> Result<HashSet<String>> {
@@ -448,36 +519,12 @@ impl RedditBot {
             ""
         };
         
-        let prompt = format!(
-            "You're browsing r/{} and just saw this post. Write a quick 1-2 sentence reaction that sounds like an actual person.\n\n\
-             Post title: {}{}\n\n\
-             STYLE:\n\
-             - Punch\n\
-             - Actually excited or interested, not fake hype\n\
-             - Say what you think, share what you know, or just react\n\
-             - Talk like a normal person texting a friend\n\
-             - Be chill, funny, helpful, or hype WHEN ITS DESERVED\n\n\
-             - Try to be a little cute, not a grown man\n\
-             DO:\n\
-             - Get straight to the point\n\
-             - Share quick personal experience if relevant\n\
-             - Drop useful info casually\n\
-             - Use natural slang: tbh, fr, ngl, lowkey, deadass (but dont overdo it)\n\
-             - Sometimes just be like damn thats cool or yoo nice\n\
-             - Match the energy of the post{}\n\n\
-             DONT:\n\
-             - Ask rhetorical questions or any questions unless you genuinely wanna know\n\
-             - Sound like an AI or corporate bot\n\
-             - Force jokes or use cringe puns\n\
-             - Use hashtags or multiple exclamation points\n\
-             - Be overly nice or overly enthusiastic\n\
-             - Use dashes or semicolons for no reason\n\n\
-             Just write the comment. Nothing else. NO quotation marks:",
-            subreddit,
-            post_title,
-            body_context,
-            emoticon_instruction
-        );
+        // Replace placeholders in the template
+        let prompt = self.prompt_template
+            .replace("{{SUBREDDIT}}", subreddit)
+            .replace("{{TITLE}}", post_title)
+            .replace("{{BODY_CONTEXT}}", &body_context)
+            .replace("{{EMOTICON_INSTRUCTION}}", emoticon_instruction);
 
         let request = GenerationRequest::new(self.model.clone(), prompt);
         
