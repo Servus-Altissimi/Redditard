@@ -20,7 +20,7 @@ use anyhow::{Result, Context};
 use rand::Rng;
 use std::collections::HashSet;
 use std::fs;
-use std::io::{Write, BufRead, BufReader};
+use std::io::{Write, BufRead, BufReader, stdin};
 use serde::Deserialize;
 use clap::Parser;
 
@@ -35,6 +35,9 @@ struct Args {
 
     #[arg(short, long)]
     verbose: bool,
+
+    #[arg(short, long)]
+    upvote: bool,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -60,6 +63,7 @@ struct RedditBot {
     comment_count: u32,
     model: String,
     verbose: bool,
+    upvote_enabled: bool,
 }
 
 impl RedditBot {
@@ -155,6 +159,7 @@ impl RedditBot {
             comment_count: 0,
             model: args.model.clone(),
             verbose: args.verbose,
+            upvote_enabled: args.upvote,
         })
     }
 
@@ -443,7 +448,7 @@ impl RedditBot {
             ""
         };
         
-        let prompt = format!( // TODO make this a config file
+        let prompt = format!(
             "You're browsing r/{} and just saw this post. Write a quick 1-2 sentence reaction that sounds like an actual person.\n\n\
              Post title: {}{}\n\n\
              STYLE:\n\
@@ -501,6 +506,13 @@ impl RedditBot {
     }
 
     async fn vote_on_comments(&self) -> Result<()> {
+        if !self.upvote_enabled {
+            if self.verbose {
+                println!("[VOTING] Skipped (upvote feature disabled)");
+            }
+            return Ok(());
+        }
+
         if self.verbose {
             println!("[VOTING] Checking comments to naturally vote");
         }
@@ -793,15 +805,99 @@ impl RedditBot {
     }
 }
 
+fn check_first_run_acknowledgment() -> Result<()> {
+    const ACK_FILE: &str = ".reddit_bot_ack";
+    
+    if fs::metadata(ACK_FILE).is_ok() {
+        return Ok(());
+    }
+
+    println!("\n{}", "=".repeat(64));
+    println!("TERMS ACKNOWLEDGMENT");
+    println!("{}", "=".repeat(64));
+    println!("\nBefore using this software, you must acknowledge the following:\n");
+    println!("This software may violate Reddit's Terms of Service.");
+    println!("You are solely responsible for any consequences of using this tool.");
+    println!("The creator of this software is not responsible for your actions.\n");
+    println!("{}", "=".repeat(64));
+    println!("\nTo continue, type EXACTLY:\n");
+    println!("I disagree with Reddit's TOS. I don't hold the creator of this software responsible for any of my actions. Solely I and I alone am responsible for any damages.");
+    println!("\n{}", "=".repeat(64));
+    print!("\nResponse: ");
+    std::io::stdout().flush()?;
+
+    let mut input = String::new();
+    stdin().read_line(&mut input)?;
+    let input = input.trim();
+
+    let expected = "I disagree with Reddit's TOS. I don't hold the creator of this software responsible for any of my actions. Solely I and I alone am responsible for any damages.";
+
+    if input != expected {
+        println!("\n[ERROR] Acknowledgment text does not match. Quitting.");
+        std::process::exit(1);
+    }
+
+    fs::write(ACK_FILE, "acknowledged")?;
+    println!("\n[SUCCESS] Acknowledgment saved. Can\'t hold me responsible now! You will not be asked again.\n");
+    
+    Ok(())
+}
+
+fn check_upvote_acknowledgment(upvote_enabled: bool) -> Result<()> {
+    if !upvote_enabled {
+        return Ok(());
+    }
+
+    const UPVOTE_ACK_FILE: &str = ".reddit_bot_upvote_ack";
+    
+    if fs::metadata(UPVOTE_ACK_FILE).is_ok() {
+        return Ok(());
+    }
+
+    println!("\n{}", "=".repeat(64));
+    println!("UPVOTE FEATURE IS BROKEN");
+    println!("{}", "=".repeat(64));
+    println!("\nYou have enabled the --upvote/-u flag.\n");
+    println!("Using the upvote feature significantly increases the");
+    println!("risk of detection and catching a ban.\n");
+    println!("Reddit's anti-bot systems can detect automated voting patterns.");
+    println!("{}", "=".repeat(64));
+    println!("\nTo continue with upvoting enabled, type EXACTLY:\n");
+    println!("I recognize that using the upvote feature will get me banned.");
+    println!("\n{}", "=".repeat(64));
+    print!("\nYour response: ");
+    std::io::stdout().flush()?;
+
+    let mut input = String::new();
+    stdin().read_line(&mut input)?;
+    let input = input.trim();
+
+    let expected = "I recognize that using the upvote feature will get me banned.";
+
+    if input != expected {
+        println!("\n[ERROR] Acknowledgment text does not match. Exiting.");
+        std::process::exit(1);
+    }
+
+    fs::write(UPVOTE_ACK_FILE, "acknowledged")?;
+    println!("\n[SUCCESS] Upvote acknowledgment recorded.\n");
+    
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
+
+    check_first_run_acknowledgment()?;
+    check_upvote_acknowledgment(args.upvote)?;
 
     println!("\n{}", "=".repeat(64));
     println!("   Reddit Comment Bot");
     println!("{}", "=".repeat(64));
     println!("\nModel: {}", args.model);
-    println!("Mode: {}\n", if args.headless { "Headless" } else { "Visible browser" });
+    println!("Mode: {}", if args.headless { "Headless" } else { "Visible browser" });
+    println!("Upvote: {}\n", if args.upvote { "ENABLED (HIGH RISK)" } else { "Disabled" });
 
     let username = std::env::var("REDDIT_USERNAME")
         .expect("Set REDDIT_USERNAME environment variable");
@@ -810,7 +906,7 @@ async fn main() -> Result<()> {
 
     let mut bot = RedditBot::new(username, password, &args).await?;
     
-    println!("Bot will run continuously. Press Ctrl+C to stop.\n");
+    println!("Bot will run continuously. Press Ctrl+C to force quit.\n");
     
     match bot.run_bot().await {
         Ok(_) => println!("\nBot finished"),
