@@ -1,0 +1,794 @@
+# Reddit Bot Configuration
+# Configure which subreddits to comment on and how to sort posts
+
+# --- GTA Subreddits ---
+[[subreddits]]
+name = "GTA"
+sort = "new"
+
+[[subreddits]]
+name = "gaming"
+sort = "rising"
+
+[[subreddits]]
+name = "pcgaming"
+sort = "hot"
+
+[[subreddits]]
+name = "GTAorRussia"
+sort = "new"
+
+[[subreddits]]
+name = "GTAV"
+sort = "top"
+timeframe = "day"
+
+[[subreddits]]
+name = "rockstar"
+sort = "rising"
+
+[[subreddits]]
+name = "gtaonline"
+sort = "hot"
+
+# --- Gaming Subreddits ---
+[[subreddits]]
+name = "PlayStation"
+sort = "hot"
+
+[[subreddits]]
+name = "XboxSeriesX"
+sort = "new"
+
+[[subreddits]]
+name = "NintendoSwitch"
+sort = "rising"
+
+[[subreddits]]
+name = "Steam"
+sort = "hot"
+
+[[subreddits]]
+name = "VALORANT"
+sort = "new"
+
+[[subreddits]]
+name = "GlobalOffensive"
+sort = "top"
+timeframe = "week"
+
+[[subreddits]]
+name = "halo"
+sort = "new"
+
+[[subreddits]]
+name = "Minecraft"
+sort = "rising"
+
+[[subreddits]]
+name = "FortNiteBR"
+sort = "hot"
+
+[[subreddits]]
+name = "CallOfDuty"
+sort = "top"
+timeframe = "week"
+
+[[subreddits]]
+name = "elderscrolls"
+sort = "new"
+
+[[subreddits]]
+name = "skyrim"
+sort = "rising"
+
+[[subreddits]]
+name = "DarkSouls2"
+sort = "hot"
+
+[[subreddits]]
+name = "darksouls3"
+sort = "hot"
+
+[[subreddits]]
+name = "Sekiro"
+sort = "new"
+
+[[subreddits]]
+name = "Eldenring"
+sort = "top"
+timeframe = "week"
+
+[[subreddits]]
+name = "Cyberpunkgame"
+sort = "rising"
+
+[[subreddits]]
+name = "Starfield"
+sort = "new"
+
+[[subreddits]]
+name = "Battlefield"
+sort = "rising"
+
+[[subreddits]]
+name = "Rainbow6"
+sort = "hot"
+
+[[subreddits]]
+name = "Overwatch"
+sort = "new"
+
+[[subreddits]]
+name = "DestinyTheGame"
+sort = "rising"
+
+[[subreddits]]
+name = "LeagueOfLegends"
+sort = "hot"
+
+[[subreddits]]
+name = "DotA2"
+sort = "new"
+
+[[subreddits]]
+name = "Smite"
+sort = "rising"
+
+[[subreddits]]
+name = "pathofexile"
+sort = "top"
+timeframe = "month"
+
+[[subreddits]]
+name = "apexlegends"
+sort = "rising"
+
+[[subreddits]]
+name = "RocketLeague"
+sort = "hot"
+
+[[subreddits]]
+name = "FIFA"
+sort = "new"
+
+[[subreddits]]
+name = "MonsterHunter"
+sort = "rising"
+
+[[subreddits]]
+name = "reddeadredemption"
+sort = "hot"
+
+[[subreddits]]
+name = "witcher"
+sort = "rising"
+
+[[subreddits]]
+name = "fallout"
+sort = "new"
+
+[[subreddits]]
+name = "Terraria"
+sort = "hot"
+
+[[subreddits]]
+name = "stardewvalley"
+sort = "rising"
+
+# --- Anime Subreddits ---
+[[subreddits]]
+name = "anime"
+sort = "hot"
+
+[[subreddits]]
+name = "Animemes"
+sort = "rising"
+
+[[subreddits]]
+name = "GoodAnimeMemes"
+sort = "hot"
+
+[[subreddits]]
+name = "Animesuggest"
+sort = "new"
+
+[[subreddits]]
+name = "Manga"
+sort = "rising"
+
+[[subreddits]]
+name = "OnePiece"
+sort = "hot"
+
+[[subreddits]]
+name = "Naruto"
+sort = "new"
+
+[[subreddits]]
+name = "Bleach"
+sort = "rising"
+
+[[subreddits]]
+name = "DBZ"
+sort = "hot"
+
+[[subreddits]]
+name = "AttackOnTitan"
+sort = "rising"
+
+[[subreddits]]
+name = "DemonSlayer"
+sort = "new"
+
+[[subreddits]]
+name = "jujutsukaisen"
+sort = "top"
+timeframe = "week"
+
+[[subreddits]]
+name = "ChainsawMan"
+sort = "rising"
+
+[[subreddits]]
+name = "myheroacademia"
+sort = "hot"
+
+[[subreddits]]
+name = "OnePunchMan"
+sort = "new"
+
+[[subreddits]]
+name = "anime_irl"
+sort = "hot"
+
+[[subreddits]]
+name = "waifuism"
+sort = "rising"
+
+[[subreddits]]
+name = "Genshin_Impact"
+sort = "top"
+timeframe = "day"
+
+[[subreddits]]
+name = "HonkaiStarRail"
+sort = "rising"
+
+[[subreddits]]
+name = "AnimeART"
+sort = "hot"
+
+[[subreddits]]
+name = "visualnovels"
+sort = "new"
+
+[[subreddits]]
+name = "AnimeSuggest"
+sort = "rising"
+
+# --- Meme / Culture / General Fun ---
+[[subreddits]]
+name = "memes"
+sort = "hot"
+
+[[subreddits]]
+name = "okbuddyretard"
+sort = "rising"
+
+[[subreddits]]
+name = "dankmemes"
+sort = "top"
+timeframe = "week"
+
+[[subreddits]]
+name = "shitposting"
+sort = "new"
+
+[[subreddits]]
+name = "4chan"
+sort = "rising"
+
+[[subreddits]]
+name = "InternetCulture"
+sort = "hot"
+
+[[subreddits]]
+name = "cringe"
+sort = "top"
+timeframe = "day"
+
+[[subreddits]]
+name = "unexpected"
+sort = "rising"
+
+[[subreddits]]
+name = "funny"
+sort = "hot"
+
+[[subreddits]]
+name = "gamingmemes"
+sort = "rising"
+
+[[subreddits]]
+name = "me_irl"
+sort = "hot"
+
+[[subreddits]]
+name = "cursedcomments"
+sort = "rising"
+
+[[subreddits]]
+name = "HolUp"
+sort = "hot"
+
+[[subreddits]]
+name = "facepalm"
+sort = "new"
+
+[[subreddits]]
+name = "PublicFreakout"
+sort = "rising"
+
+[[subreddits]]
+name = "AbruptChaos"
+sort = "hot"
+
+# --- Niche Gaming Communities ---
+[[subreddits]]
+name = "pcmasterrace"
+sort = "hot"
+
+[[subreddits]]
+name = "buildapc"
+sort = "new"
+
+[[subreddits]]
+name = "linux_gaming"
+sort = "rising"
+
+[[subreddits]]
+name = "emulation"
+sort = "hot"
+
+[[subreddits]]
+name = "retrogaming"
+sort = "rising"
+
+[[subreddits]]
+name = "patientgamers"
+sort = "hot"
+
+[[subreddits]]
+name = "IndieGaming"
+sort = "rising"
+
+[[subreddits]]
+name = "roguelikes"
+sort = "new"
+
+[[subreddits]]
+name = "roguelites"
+sort = "rising"
+
+[[subreddits]]
+name = "HalfLife"
+sort = "hot"
+
+[[subreddits]]
+name = "Doom"
+sort = "rising"
+
+[[subreddits]]
+name = "Metroid"
+sort = "new"
+
+[[subreddits]]
+name = "zelda"
+sort = "hot"
+
+[[subreddits]]
+name = "JRPG"
+sort = "rising"
+
+[[subreddits]]
+name = "RPG_gamers"
+sort = "hot"
+
+[[subreddits]]
+name = "trucksim"
+sort = "new"
+
+[[subreddits]]
+name = "flightsim"
+sort = "rising"
+
+[[subreddits]]
+name = "simracing"
+sort = "hot"
+
+# --- Tech & Internet Culture ---
+[[subreddits]]
+name = "technology"
+sort = "hot"
+
+[[subreddits]]
+name = "programming"
+sort = "rising"
+
+[[subreddits]]
+name = "ProgrammerHumor"
+sort = "hot"
+
+[[subreddits]]
+name = "linux"
+sort = "new"
+
+[[subreddits]]
+name = "unixporn"
+sort = "top"
+timeframe = "week"
+
+[[subreddits]]
+name = "mechanicalkeyboards"
+sort = "hot"
+
+[[subreddits]]
+name = "battlestations"
+sort = "rising"
+
+[[subreddits]]
+name = "homelab"
+sort = "new"
+
+[[subreddits]]
+name = "selfhosted"
+sort = "rising"
+
+[[subreddits]]
+name = "datahoarder"
+sort = "hot"
+
+[[subreddits]]
+name = "privacy"
+sort = "new"
+
+[[subreddits]]
+name = "Piracy"
+sort = "rising"
+
+# --- Entertainment & Media ---
+[[subreddits]]
+name = "movies"
+sort = "hot"
+
+[[subreddits]]
+name = "television"
+sort = "rising"
+
+[[subreddits]]
+name = "Marvel"
+sort = "hot"
+
+[[subreddits]]
+name = "DC_Cinematic"
+sort = "new"
+
+[[subreddits]]
+name = "StarWars"
+sort = "rising"
+
+[[subreddits]]
+name = "lotr"
+sort = "hot"
+
+[[subreddits]]
+name = "HarryPotter"
+sort = "rising"
+
+[[subreddits]]
+name = "TheOffice"
+sort = "hot"
+
+[[subreddits]]
+name = "DunderMifflin"
+sort = "rising"
+
+[[subreddits]]
+name = "breakingbad"
+sort = "new"
+
+[[subreddits]]
+name = "startrek"
+sort = "hot"
+
+[[subreddits]]
+name = "horror"
+sort = "rising"
+
+# --- Niche Interest Communities ---
+[[subreddits]]
+name = "MechanicalKeyboards"
+sort = "hot"
+
+[[subreddits]]
+name = "fountainpens"
+sort = "new"
+
+[[subreddits]]
+name = "watches"
+sort = "rising"
+
+[[subreddits]]
+name = "headphones"
+sort = "hot"
+
+[[subreddits]]
+name = "audiophile"
+sort = "rising"
+
+[[subreddits]]
+name = "synthesizers"
+sort = "new"
+
+[[subreddits]]
+name = "Guitar"
+sort = "rising"
+
+[[subreddits]]
+name = "EDM"
+sort = "hot"
+
+[[subreddits]]
+name = "hiphopheads"
+sort = "rising"
+
+[[subreddits]]
+name = "Metal"
+sort = "new"
+
+[[subreddits]]
+name = "cars"
+sort = "hot"
+
+[[subreddits]]
+name = "motorcycles"
+sort = "rising"
+
+[[subreddits]]
+name = "bicycling"
+sort = "new"
+
+# --- Lifestyle & Advice ---
+[[subreddits]]
+name = "AskReddit"
+sort = "rising"
+
+[[subreddits]]
+name = "explainlikeimfive"
+sort = "hot"
+
+[[subreddits]]
+name = "LifeProTips"
+sort = "rising"
+
+[[subreddits]]
+name = "UnethicalLifeProTips"
+sort = "hot"
+
+[[subreddits]]
+name = "IllegalLifeProTips"
+sort = "new"
+
+[[subreddits]]
+name = "todayilearned"
+sort = "hot"
+
+[[subreddits]]
+name = "YouShouldKnow"
+sort = "rising"
+
+[[subreddits]]
+name = "coolguides"
+sort = "hot"
+
+[[subreddits]]
+name = "interestingasfuck"
+sort = "rising"
+
+[[subreddits]]
+name = "Damnthatsinteresting"
+sort = "hot"
+
+# --- Niche Meme Communities ---
+[[subreddits]]
+name = "whenthe"
+sort = "rising"
+
+[[subreddits]]
+name = "antimeme"
+sort = "hot"
+
+[[subreddits]]
+name = "bonehurtingjuice"
+sort = "rising"
+
+[[subreddits]]
+name = "comedyheaven"
+sort = "hot"
+
+[[subreddits]]
+name = "comedynecromancy"
+sort = "new"
+
+[[subreddits]]
+name = "starterpacks"
+sort = "rising"
+
+[[subreddits]]
+name = "trippinthroughtime"
+sort = "hot"
+
+[[subreddits]]
+name = "NotKenM"
+sort = "rising"
+
+[[subreddits]]
+name = "BrandNewSentence"
+sort = "hot"
+
+[[subreddits]]
+name = "rareinsults"
+sort = "rising"
+
+[[subreddits]]
+name = "TechnicallyTheTruth"
+sort = "hot"
+
+# --- Food & Cooking ---
+[[subreddits]]
+name = "food"
+sort = "hot"
+
+[[subreddits]]
+name = "FoodPorn"
+sort = "rising"
+
+[[subreddits]]
+name = "Cooking"
+sort = "new"
+
+[[subreddits]]
+name = "recipes"
+sort = "rising"
+
+[[subreddits]]
+name = "pizza"
+sort = "hot"
+
+[[subreddits]]
+name = "ramen"
+sort = "rising"
+
+[[subreddits]]
+name = "sushi"
+sort = "hot"
+
+[[subreddits]]
+name = "Coffee"
+sort = "rising"
+
+# --- Fitness & Health ---
+[[subreddits]]
+name = "fitness"
+sort = "hot"
+
+[[subreddits]]
+name = "bodybuilding"
+sort = "rising"
+
+[[subreddits]]
+name = "gainit"
+sort = "new"
+
+[[subreddits]]
+name = "loseit"
+sort = "rising"
+
+[[subreddits]]
+name = "running"
+sort = "hot"
+
+# --- Storytelling & Interesting Content ---
+[[subreddits]]
+name = "WritingPrompts"
+sort = "hot"
+
+[[subreddits]]
+name = "nosleep"
+sort = "rising"
+
+[[subreddits]]
+name = "shortscarystories"
+sort = "new"
+
+[[subreddits]]
+name = "tifu"
+sort = "hot"
+
+[[subreddits]]
+name = "AITA"
+sort = "rising"
+
+[[subreddits]]
+name = "relationship_advice"
+sort = "new"
+
+[[subreddits]]
+name = "MaliciousCompliance"
+sort = "hot"
+
+[[subreddits]]
+name = "ProRevenge"
+sort = "rising"
+
+[[subreddits]]
+name = "pettyrevenge"
+sort = "hot"
+
+# --- More Niche Gaming ---
+[[subreddits]]
+name = "deadbydaylight"
+sort = "rising"
+
+[[subreddits]]
+name = "Seaofthieves"
+sort = "hot"
+
+[[subreddits]]
+name = "DnD"
+sort = "rising"
+
+[[subreddits]]
+name = "dndmemes"
+sort = "hot"
+
+[[subreddits]]
+name = "Warhammer40k"
+sort = "rising"
+
+[[subreddits]]
+name = "totalwar"
+sort = "new"
+
+[[subreddits]]
+name = "CrusaderKings"
+sort = "rising"
+
+[[subreddits]]
+name = "eu4"
+sort = "hot"
+
+[[subreddits]]
+name = "Stellaris"
+sort = "rising"
+
+[[subreddits]]
+name = "RimWorld"
+sort = "hot"
+
+[[subreddits]]
+name = "factorio"
+sort = "rising"
+
+[[subreddits]]
+name = "SatisfactoryGame"
+sort = "new"
+
+[[subreddits]]
+name = "DeepRockGalactic"
+sort = "rising"
+
+[[subreddits]]
+name = "valheim"
+sort = "hot"
