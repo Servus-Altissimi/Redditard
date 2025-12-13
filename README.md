@@ -1,4 +1,4 @@
-# Reddit User, Automated Reddit Commenting Bot
+# Redditard, Automated Reddit Commenting Bot
 This program uses Selenium/Thirtyfour WebDriver and Ollama to automatically browse Reddit, generate human-esque comments using AI, and post them to various subreddits with 'natural' behaviour patterns.
 
 
