@@ -1,8 +1,7 @@
 # Redditard, Automated Reddit Commenting Bot
 This program uses Selenium/Thirtyfour WebDriver and Ollama to automatically browse Reddit, generate human-esque comments using AI, and post them to various subreddits with 'natural' behaviour patterns.
 
-
-<sup><sub>Your account will eventually get flagged and your IP will be banned, I NEITHER CARE NOR AM RESPONSIBLE FOR HOW YOU USE THIS PROGRAM. ALL ON YOU!</sub></sup>
+Your account will eventually get flagged and your IP will be banned, I NEITHER CARE NOR AM RESPONSIBLE FOR HOW YOU USE THIS PROGRAM. ALL ON YOU!
 
 ## Features
 - Logs into Reddit and navigates subreddits automatically
@@ -70,39 +69,13 @@ This isn't safe.
 
 ## Flags
 | Option | Description | Default |
-|--------|--------------|----------|
-| `--model`:`-m` | Ollama model name | `deepseek-r1:latest` |
-| `--headless`:`-H` | Run browser in headless mode | `false` |
-| `--verbose`:`-v` | Print detailed debug information | `false` |
-| `--upvote`: `-u` | Enable voting on comments (**HIGH RISK OF GETTING YOU FLAGGED**) | `false` |
-
-## Usage Examples
-
-### Basic usage (visible browser):
-```bash
-./reddit-user
-```
-
-### Headless mode with custom model:
-```bash
-./reddit-user --headless --model llama3.2:latest
-```
-
-### Verbose output with upvoting (risky):
-```bash
-./reddit-user --verbose --upvote
-```
-
-### Full stealth mode:
-```bash
-./reddit-user --headless --model deepseek-r1:latest --verbose
-```
-
-## Running ChromeDriver
-Before starting the bot, run ChromeDriver on port 9517:
-```bash
-chromedriver --port=9517
-```
+|--------|-------------|---------|
+| `--model`, `-m` | Ollama model name | `deepseek-r1:latest` |
+| `--headless`, `-H` | Run browser in headless mode | `false` |
+| `--verbose`, `-v` | Print detailed debug information | `false` |
+| `--min-interval`, `-i` | Minimum seconds between comments | `60` |
+| `--max-interval`, `-x` | Maximum seconds between comments | `600` |
+| `--upvote`, `-u` | Enable voting on comments (**HIGH RISK**) | `false` |
 
 ## Output Files
 This program will output a lot of pointless files.
@@ -129,7 +102,8 @@ This program will output a lot of pointless files.
 This program isn't time proof. Reddit slightly changing its UI will break it. It's open-source so if you like it you can fix it yourself :)
 
 ## Disclaimer
-This project violates Reddit’s Terms of Service.
-Accounts and IPs used with this software will likely be flagged or banned.
+- This project violates Reddit’s Terms of Service.
+- Accounts and IPs used with this software will likely be flagged or banned.
+- You are solely responsible for how you use this.
 
-You are solely responsible for how you use this.
+Your account will eventually get flagged and your IP will be banned, I NEITHER CARE NOR AM RESPONSIBLE FOR HOW YOU USE THIS PROGRAM. ALL ON YOU!

@@ -1,9 +1,7 @@
-//                  ,--.   ,--.,--.  ,--.                                    
-// ,--.--. ,---.  ,-|  | ,-|  |`--',-'  '-.    ,--.,--. ,---.  ,---. ,--.--. 
-// |  .--'| .-. :' .-. |' .-. |,--.'-.  .-'    |  ||  |(  .-' | .-. :|  .--' 
-// |  |   \   --.\ `-' |\ `-' ||  |  |  |      '  ''  '.-'  `)\   --.|  |    
-// `--'    `----' `---'  `---' `--'  `--'       `----' `----'  `----'`--'    
-
+//      ▌ ▌▘▗      ▌
+// ▛▘█▌▛▌▛▌▌▜▘▀▌▛▘▛▌
+// ▌ ▙▖▙▌▙▌▌▐▖█▌▌ ▙▌
+                 
 // Requires Ollama & Chromedriver
 // Uses reddit for you!  
 // I neither care nor am responsible for any damages. 
@@ -40,6 +38,12 @@ struct Args {
 
     #[arg(short, long)]
     upvote: bool,
+
+    #[arg(short = 'i', long, default_value = "60")]
+    min_interval: u64,
+
+    #[arg(short = 'x', long, default_value = "600")]
+    max_interval: u64,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -708,13 +712,17 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
         Ok(())
     }
 
-    async fn run_bot(&mut self) -> Result<()> {
+    async fn run_bot(&mut self, min_wait: u64, max_wait: u64) -> Result<()> {
+        if min_wait > max_wait {
+            return Err(anyhow::anyhow!("minimal interval cannot be greater than maximum interval"));
+        }
+
         println!("{}", "=".repeat(64));
         println!("Reddit Bot Starting - Continuous Mode");
         println!("{}\n", "=".repeat(64));
-        
+
         self.login().await?;
-        
+
         let mut comments_posted = 0;
         let mut consecutive_failures = 0;
         let mut rng = rand::thread_rng();
@@ -724,7 +732,7 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
                 println!("\n[WARNING] 10 consecutive failures. Waiting 5 minutes before retry");
                 sleep(Duration::from_secs(300)).await;
                 consecutive_failures = 0;
-                
+
                 match self.login().await {
                     Ok(_) => println!("[SUCCESS] Re-logged in successfully"),
                     Err(e) => {
@@ -739,7 +747,7 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
 
             println!("{}", "=".repeat(64));
             println!("Random pick: r/{} [{}]", subreddit_config.name, subreddit_config.sort);
-            
+
             let bar_width = 50;
             let filled = ((comments_posted % 100) as f32 / 100.0 * bar_width as f32) as usize;
             let empty = "░".repeat(bar_width - filled);
@@ -777,7 +785,7 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
             }
 
             let max_posts_to_check = posts.len().min(20);
-            
+
             let mut found_post = false;
             for _ in 0..max_posts_to_check {
                 let post_index = rng.gen_range(0..max_posts_to_check);
@@ -799,7 +807,7 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
                             println!("[BODY] {}", preview);
                         }
                         found_post = true;
-                        
+
                         let comment = match self.generate_comment(&title, &post_body, &subreddit_config.name).await {
                             Ok(c) => c,
                             Err(e) => {
@@ -809,15 +817,15 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
                                 break;
                             }
                         };
-                        
+
                         match self.post_comment(&link, &comment, &post_id, &subreddit_config.name, &title).await {
                             Ok(_) => {
                                 comments_posted += 1;
                                 self.comment_count += 1;
                                 consecutive_failures = 0;
                                 println!("[SUCCESS] Total comments posted: {}", comments_posted);
-                                
-                                let wait_time = rng.gen_range(60..=600);
+
+                                let wait_time = rng.gen_range(min_wait..=max_wait);
                                 println!("[WAIT] Chilling for {} seconds before next comment\n", wait_time);
                                 sleep(Duration::from_secs(wait_time)).await;
                                 break;
@@ -845,7 +853,6 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
             }
         }
     }
-
     async fn quit(self) -> Result<()> {
         self.driver.quit().await?;
         Ok(())
@@ -944,7 +951,8 @@ async fn main() -> Result<()> {
     println!("{}", "=".repeat(64));
     println!("\nModel: {}", args.model);
     println!("Mode: {}", if args.headless { "Headless" } else { "Visible browser" });
-    println!("Upvote: {}\n", if args.upvote { "ENABLED (HIGH RISK)" } else { "Disabled" });
+    println!("Upvote: {}", if args.upvote { "ENABLED (HIGH RISK)" } else { "Disabled" });
+    println!("Wait interval: {}-{} seconds\n", args.min_interval, args.max_interval);
 
     let username = std::env::var("REDDIT_USERNAME")
         .expect("Set REDDIT_USERNAME environment variable");
@@ -955,7 +963,7 @@ async fn main() -> Result<()> {
     
     println!("Bot will run continuously. Press Ctrl+C to force quit.\n");
     
-    match bot.run_bot().await {
+    match bot.run_bot(args.min_interval, args.max_interval).await {
         Ok(_) => println!("\nBot finished"),
         Err(e) => eprintln!("\nBot error: {}", e),
     }
