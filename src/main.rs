@@ -27,7 +27,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(author, version, about = "Reddit comment bot with natural behaviour", long_about = None)]
 struct Args {
-    #[arg(short, long, default_value = "deepseek-r1:latest")]
+    #[arg(short, long, default_value = "llama3.2:latest")]
     model: String,
 
     #[arg(short = 'H', long)]
@@ -44,6 +44,9 @@ struct Args {
 
     #[arg(short = 'x', long, default_value = "600")]
     max_interval: u64,
+
+    #[arg(short = 'r', long)]
+    reactions: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -77,6 +80,19 @@ struct RedditBot {
     verbose: bool,
     upvote_enabled: bool,
     prompt_template: String,
+    predefined_reactions: Vec<String>,
+}
+
+// a multi-byte character. Always returns a valid &str.
+fn truncate_utf8(s: &str, max_bytes: usize) -> &str {
+    if s.len() <= max_bytes {
+        return s;
+    }
+    let mut boundary = max_bytes;
+    while !s.is_char_boundary(boundary) {
+        boundary -= 1;
+    }
+    &s[..boundary]
 }
 
 impl RedditBot {
@@ -88,31 +104,28 @@ impl RedditBot {
 
         let prompt_template = Self::load_prompt_template(args.verbose)?;
         let commented_posts = Self::load_posted_history()?;
+        let predefined_reactions = Self::load_reactions(args.reactions.as_deref(), args.verbose)?;
         
         if args.verbose {
             println!("[INIT] Loaded {} previously commented posts", commented_posts.len());
             println!("[INIT] Using {} prompt", if prompt_template.contains("{{SUBREDDIT}}") { "custom" } else { "default" });
+            if !predefined_reactions.is_empty() {
+                println!("[INIT] Loaded {} predefined reactions (Ollama disabled)", predefined_reactions.len());
+            }
         }
 
         let mut caps = DesiredCapabilities::chrome();
         
         let user_agents = vec![
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
             "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/537.36",
-            "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36",
-            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/537.36",
             "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6) AppleWebKit/537.36",
             "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
-            "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36",
             "Mozilla/5.0 (iPad; CPU OS 16_6 like Mac OS X) AppleWebKit/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_5_1) AppleWebKit/537.36",
             "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36",
-            "Mozilla/5.0 (Linux; Android 12; OnePlus 9) AppleWebKit/537.36",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36",
-            "Mozilla/5.0 (Linux; Android 11; Nokia X20) AppleWebKit/537.36",
             "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36",
             "Mozilla/5.0 (X11; CrOS x86_64 15604.45.0) AppleWebKit/537.36",
             "Mozilla/5.0 (Windows NT 10.0) AppleWebKit/537.36",
@@ -123,17 +136,64 @@ impl RedditBot {
         let user_agent = user_agents[rng.gen_range(0..user_agents.len())];
         
         let mut chrome_args = vec![
+            // Identity / anti-detection
             format!("--user-agent={}", user_agent),
             "--disable-blink-features=AutomationControlled".to_string(),
-            "--disable-dev-shm-usage".to_string(),
-            "--no-sandbox".to_string(),
-            "--disable-gpu".to_string(),
             "--disable-infobars".to_string(),
             "--start-maximized".to_string(),
+            "--lang=en-US".to_string(),
+
+            // Process model
+            "--no-sandbox".to_string(),
+            "--disable-setuid-sandbox".to_string(),
+            "--single-process".to_string(),
+            "--no-zygote".to_string(),
+
+            // GPU / rendering (save dedicated GPU RAM)
+            "--disable-gpu".to_string(),
+            "--disable-software-rasterizer".to_string(),
+            "--disable-features=UseSkiaRenderer,VizDisplayCompositor".to_string(),
+
+            // Cap V8 JS heap
+            "--js-flags=--max-old-space-size=256 --max-semi-space-size=16".to_string(),
+
+            // huge RAM saver
+            "--disable-site-isolation-trials".to_string(),
+            "--disable-features=IsolateOrigins,site-per-process".to_string(),
+
+            // Shrink disk/media caches to near-zero
+            "--disk-cache-size=1".to_string(),
+            "--media-cache-size=1".to_string(),
+            "--aggressive-cache-discard".to_string(),
+
+            // Kill background network chatter
+            "--disable-background-networking".to_string(),
+            "--disable-background-timer-throttling".to_string(),
+            "--disable-backgrounding-occluded-windows".to_string(),
+            "--disable-sync".to_string(),
+            "--disable-domain-reliability".to_string(),
+            "--disable-component-update".to_string(),
+            "--disable-client-side-phishing-detection".to_string(),
+            "--no-pings".to_string(),
+
+            // Kill unnecessary Chrome features
+            "--disable-features=TranslateUI,GlobalMediaControls,MediaRouter,\
+AutofillServerCommunication,CertificateTransparencyComponentUpdater,\
+RendererCodeIntegrity".to_string(),
+            "--disable-default-apps".to_string(),
+            "--disable-extensions".to_string(),
             "--disable-notifications".to_string(),
             "--disable-popup-blocking".to_string(),
-            "--disable-extensions".to_string(),
-            "--lang=en-US".to_string(),
+            "--no-first-run".to_string(),
+            "--disable-dev-shm-usage".to_string(),
+
+            // Kill crash/logging overhead
+            "--disable-crash-reporter".to_string(),
+            "--disable-in-process-stack-traces".to_string(),
+            "--disable-breakpad".to_string(),
+            "--disable-logging".to_string(),
+            "--log-level=3".to_string(),
+            "--disable-hang-monitor".to_string(),
         ];
         
         if args.headless {
@@ -176,7 +236,35 @@ impl RedditBot {
             verbose: args.verbose,
             upvote_enabled: args.upvote,
             prompt_template,
+            predefined_reactions,
         })
+    }
+
+    fn load_reactions(path: Option<&str>, verbose: bool) -> Result<Vec<String>> {
+        let path = match path {
+            Some(p) => p,
+            None => return Ok(Vec::new()),
+        };
+
+        let content = fs::read_to_string(path)
+            .with_context(|| format!("Failed to read reactions file: {}", path))?;
+
+        let reactions: Vec<String> = content
+            .lines()
+            .map(|l| l.trim())
+            .filter(|l| !l.is_empty() && !l.starts_with('#'))
+            .map(|l| l.to_string())
+            .collect();
+
+        if reactions.is_empty() {
+            return Err(anyhow::anyhow!("Reactions file '{}' exists but contains no valid entries", path));
+        }
+
+        if verbose {
+            println!("[REACTIONS] Loaded {} reactions from '{}'", reactions.len(), path);
+        }
+
+        Ok(reactions)
     }
 
     fn load_prompt_template(verbose: bool) -> Result<String> {
@@ -206,7 +294,6 @@ impl RedditBot {
             }
         }
 
-        // to be safe
         Ok(r#"You're browsing r/{{SUBREDDIT}} and just saw this post. Write a quick 1-2 sentence reaction that sounds like an actual person.
 
 Post title: {{TITLE}}{{BODY_CONTEXT}}
@@ -289,7 +376,7 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
             &format!("window.scrollBy(0, {});", scroll_amount),
             vec![]
         ).await;
-        sleep(Duration::from_millis(rng.gen_range(200..800))).await;
+        sleep(Duration::from_millis(rng.gen_range(20..200))).await;
     }
 
     async fn human_type(&self, element: &WebElement, text: &str) -> Result<()> {
@@ -311,7 +398,7 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
 
     async fn random_pause(&self) {
         let mut rng = rand::thread_rng();
-        sleep(Duration::from_millis(rng.gen_range(500..2000))).await;
+        sleep(Duration::from_millis(rng.gen_range(50..200))).await;
     }
 
     async fn handle_cookie_popup(&self) {
@@ -501,15 +588,27 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
     }
 
     async fn generate_comment(&self, post_title: &str, post_body: &str, subreddit: &str) -> Result<String> {
+    	if !self.predefined_reactions.is_empty() {
+            let mut rng = rand::thread_rng();
+            let index = rng.gen_range(0..self.predefined_reactions.len());
+            let comment = self.predefined_reactions[index].clone();
+            if self.verbose {
+                println!("[REACTIONS] Picked reaction #{}: {}", index + 1, comment);
+            }
+            return Ok(comment);
+        }
+
         if self.verbose {
-            println!("[AI] Generating comment");
+            let prompt_preview = truncate_utf8(&self.prompt_template, 80);
+            let prompt_source = if self.prompt_template.contains("koopjager") {
+                "custom"
+            } else {
+                "built-in"
+            };
+            println!("[AI] Using {} prompt: {}...", prompt_source, prompt_preview);
         }
         
-        let body_preview = if post_body.len() > 200 {
-            &post_body[..200]
-        } else {
-            post_body
-        };
+        let body_preview = truncate_utf8(post_body, 200);
 
         let body_context = if !post_body.is_empty() {
             format!("\n\nPost content: {}", body_preview)
@@ -523,7 +622,6 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
             ""
         };
         
-        // Replace placeholders in the template
         let prompt = self.prompt_template
             .replace("{{SUBREDDIT}}", subreddit)
             .replace("{{TITLE}}", post_title)
@@ -799,12 +897,12 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
 
                         println!("\n[FOUND] \"{}\"", title);
                         if !post_body.is_empty() && self.verbose {
-                            let preview = if post_body.len() > 100 {
-                                format!("{}...", &post_body[..100])
+                            let preview = truncate_utf8(&post_body, 100);
+                            if post_body.len() > 100 {
+                                println!("[BODY] {}...", preview);
                             } else {
-                                post_body.clone()
-                            };
-                            println!("[BODY] {}", preview);
+                                println!("[BODY] {}", preview);
+                            }
                         }
                         found_post = true;
 
@@ -853,6 +951,7 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
             }
         }
     }
+
     async fn quit(self) -> Result<()> {
         self.driver.quit().await?;
         Ok(())
