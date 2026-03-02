@@ -1,6 +1,5 @@
 # Redditard, Automated Reddit Commenting Bot
 This program uses Selenium/Thirtyfour WebDriver and Ollama to automatically browse Reddit, generate human-esque comments using AI, and post them to various subreddits with 'natural' behaviour patterns.
-
 Your account will eventually get flagged and your IP will be banned, I NEITHER CARE NOR AM RESPONSIBLE FOR HOW YOU USE THIS PROGRAM. ALL ON YOU!
 
 ## Features
@@ -12,18 +11,17 @@ Your account will eventually get flagged and your IP will be banned, I NEITHER C
 - Tracks commented posts to avoid duplicates
 - Optional voting on other comments (high risk feature, you will get flagged quickly)
 - Headless or visible browser modes
-
+- Predefined reactions list as an alternative to Ollama
+  
 ## Requirements
 - Rust & Cargo
 - ChromeDriver **running on port 9517**
 - Ollama installed **and running**
 - Reddit account credentials (gross)
-
 ## Compile
 ```bash
 cargo build --release
 ```
-
 ## Configuration Files
 
 ### subreddits.toml
@@ -32,32 +30,48 @@ Define which subreddits to target and how to sort posts:
 [[subreddits]]
 name = "unixporn"
 sort = "hot"
-
 [[subreddits]]
 name = "programming"
 sort = "top"
 timeframe = "day"
-
 [[subreddits]]
 name = "askreddit"
 sort = "rising"
 ```
-
 ### prompt.toml (Optional)
 Customize the AI prompt used to generate comments. If not present, uses default prompt.
 ```toml
 custom_prompt = """
 You're browsing r/{{SUBREDDIT}} and just saw: {{TITLE}}{{BODY_CONTEXT}}
-
 Write a quick 1-2 sentence reaction.
 Just write the comment, nothing else:
 """
 ```
-
 **Available placeholders:**
 - `{{SUBREDDIT}}` - Subreddit name
 - `{{TITLE}}` - Post title
 - `{{BODY_CONTEXT}}` - Post content preview
+
+### reactions.txt (Optional)
+A plain text file with one reaction per line. When provided via `--reactions`, Ollama is skipped entirely and the bot picks a random line from this file instead.
+- Lines starting with `#` are treated as comments and ignored
+- Blank lines are ignored
+
+```
+# General reactions
+ngl this is actually pretty cool
+tbh didn't expect that lol
+fr though this is wild
+
+# Hype
+yoo no way
+deadass did not see that coming
+
+# Chill
+solid
+not bad at all
+pretty neat tbh
+```
 
 ## Environment Variables
 Set your Reddit credentials:
@@ -66,7 +80,6 @@ export REDDIT_USERNAME="username"
 export REDDIT_PASSWORD="password"
 ```
 This isn't safe.
-
 ## Flags
 | Option | Description | Default |
 |--------|-------------|---------|
@@ -76,7 +89,7 @@ This isn't safe.
 | `--min-interval`, `-i` | Minimum seconds between comments | `60` |
 | `--max-interval`, `-x` | Maximum seconds between comments | `600` |
 | `--upvote`, `-u` | Enable voting on comments (**HIGH RISK**) | `false` |
-
+| `--reactions`, `-r` | Path to predefined reactions file (disables Ollama) | `none` |
 ## Output Files
 This program will output a lot of pointless files.
 - `posted.txt` - Log of all commented posts with timestamps
@@ -84,7 +97,6 @@ This program will output a lot of pointless files.
 - `before_submit.png` - Screenshot before submitting comment (if verbose)
 - `.reddit_bot_ack` - First run acknowledgment flag
 - `.reddit_bot_upvote_ack` - Upvote feature acknowledgment flag
-
 ## Behaviour
 - Randomly selects subreddit from config
 - Checks up to 20 posts per subreddit visit
@@ -94,16 +106,13 @@ This program will output a lot of pointless files.
 - Random scrolling and pauses
 - Rotates user agents for anonymity
 - Optional comment voting (8.3% upvote, 14.3% downvote, 77.4% skip)
-
 ## Troubleshooting
 - **ChromeDriver errors**: Ensure ChromeDriver is running on port 9517
 - **Ollama fails**: Verify Ollama service is running and model used is downloaded
 - **No posts found**: Check subreddit names in `subreddits.toml`, else blame reddit updating
 This program isn't time proof. Reddit slightly changing its UI will break it. It's open-source so if you like it you can fix it yourself :)
-
 ## Disclaimer
-- This project violates Reddit’s Terms of Service.
+- This project violates Reddit's Terms of Service.
 - Accounts and IPs used with this software will likely be flagged or banned.
 - You are solely responsible for how you use this.
-
 Your account will eventually get flagged and your IP will be banned, I NEITHER CARE NOR AM RESPONSIBLE FOR HOW YOU USE THIS PROGRAM. ALL ON YOU!
