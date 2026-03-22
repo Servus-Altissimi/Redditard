@@ -572,17 +572,16 @@ Just write the comment. Nothing else. NO quotation marks:"#.to_string())
             .unwrap_or("")
             .to_string();
 
-        let post_body = post_element
+        let post_body = match post_element
             .query(By::Css("[slot='text-body']"))
             .or(By::Css(".md"))
             .or(By::Css("[data-click-id='text']"))
             .first()
             .await
-            .ok()
-            .and_then(|elem| {
-                futures::executor::block_on(elem.text()).ok()
-            })
-            .unwrap_or_default();
+            {
+                Ok(elem) => elem.text().await.unwrap_or_default(),
+                Err(_) => String::new(),
+            };
 
         Ok((title, link, post_id, post_body))
     }
